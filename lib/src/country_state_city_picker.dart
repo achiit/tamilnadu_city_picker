@@ -1,17 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import './model/city_model.dart';
+import './model/district_model.dart';
+import './model/taluk_model.dart';
 
 class CountryStateCityPicker extends StatefulWidget {
-  final TextEditingController city;
+  final TextEditingController districtController;
+  final TextEditingController talukController;
   final InputDecoration? textFieldDecoration;
   final Color? dialogColor;
   final Color? containerColor;
 
   const CountryStateCityPicker({
     Key? key,
-    required this.city,
+    required this.districtController,
+    required this.talukController,
     this.containerColor,
     this.textFieldDecoration,
     this.dialogColor,
@@ -22,26 +25,37 @@ class CountryStateCityPicker extends StatefulWidget {
 }
 
 class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
-  final List<CityModel> _cityList = [];
-  List<CityModel> _citySubList = [];
-  String _title = 'City';
+  final List<DistrictModel> _districtList = [];
+  final List<TalukModel> _talukList = [];
+  List<TalukModel> _filteredTalukList = [];
+  String _selectedDistrict = '';
 
   @override
   void initState() {
     super.initState();
-    _getCity();
+    _getDistricts();
+    _getTaluks();
   }
 
-  Future<void> _getCity() async {
-    _cityList.clear();
+  Future<void> _getDistricts() async {
+    _districtList.clear();
     var jsonString = await rootBundle
-        .loadString('packages/country_state_city_pro/assets/city.json');
+        .loadString('packages/country_state_city_pro/assets/district.json');
     List<dynamic> body = json.decode(jsonString);
-
     setState(() {
-      _cityList.addAll(
-          body.map((dynamic item) => CityModel.fromJson(item)).toList());
-      _citySubList = _cityList;
+      _districtList.addAll(
+          body.map((dynamic item) => DistrictModel.fromJson(item)).toList());
+    });
+  }
+
+  Future<void> _getTaluks() async {
+    _talukList.clear();
+    var jsonString = await rootBundle
+        .loadString('packages/country_state_city_pro/assets/taluk.json');
+    List<dynamic> body = json.decode(jsonString);
+    setState(() {
+      _talukList.addAll(
+          body.map((dynamic item) => TalukModel.fromJson(item)).toList());
     });
   }
 
@@ -49,52 +63,35 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // TextField(
-        //   readOnly: true,
-        //   controller: TextEditingController(text: 'India'), // Set default value to India
-        //   decoration: widget.textFieldDecoration == null
-        //       ? defaultDecoration.copyWith(hintText: 'Country')
-        //       : widget.textFieldDecoration
-        //           ?.copyWith(hintText: 'Country'),
-        // ),
-        // const SizedBox(height: 8.0),
-
-        // TextField(
-        //   readOnly: true,
-        //   controller: TextEditingController(text: 'Tamil Nadu'), // Set default value to Tamil Nadu
-        //   decoration: widget.textFieldDecoration == null
-        //       ? defaultDecoration.copyWith(hintText: 'State')
-        //       : widget.textFieldDecoration
-        //           ?.copyWith(hintText: 'State'),
-        // ),
+        // Add District TextField
+        TextField(
+          readOnly: true,
+          onTap: () {
+            _showDistrictDialog(context);
+          },
+          controller: widget.districtController,
+          decoration: defaultDecoration.copyWith(hintText: 'Select district'),
+        ),
         const SizedBox(height: 8.0),
 
-        Container(
-          decoration: BoxDecoration(
-              color: widget.containerColor ?? Colors.grey.shade200,
-              shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.circular(20)),
-          child: TextField(
-            style: TextStyle(color: Colors.white),
-            controller: widget.city,
-            onTap: () {
-              _showDialog(context);
-            },
-            decoration: widget.textFieldDecoration == null
-                ? defaultDecoration.copyWith(hintText: 'Select city')
-                : widget.textFieldDecoration?.copyWith(hintText: 'Select city'),
-            readOnly: true,
-          ),
+        // Add Taluk TextField
+        TextField(
+          readOnly: true,
+          onTap: () {
+            _showTalukDialog(context);
+          },
+          controller: widget.talukController,
+          decoration: defaultDecoration.copyWith(hintText: 'Select taluk'),
         ),
       ],
     );
   }
 
-  void _showDialog(BuildContext context) {
+  void _showDistrictDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
 
     showGeneralDialog(
-      barrierLabel: _title,
+      barrierLabel: 'District',
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.5),
       transitionDuration: const Duration(milliseconds: 350),
@@ -110,27 +107,130 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
                   height: MediaQuery.of(context).size.height * .7,
                   margin: const EdgeInsets.only(top: 60, left: 12, right: 12),
                   decoration: BoxDecoration(
-                    color: widget.dialogColor ?? Colors.white,
+                    color: Color(0xffF2FAEB),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
                     children: [
-                      // const SizedBox(height: 10),
-                      // Text(_title,
-                      //     style: TextStyle(
-                      //         color: Colors.white,
-                      //         fontSize: 17,
-                      //         fontWeight: FontWeight.w500)),
                       const SizedBox(height: 10),
 
                       ///Text Field
                       TextField(
-                        //style: TextStyle(color: Colors.white),
-
                         controller: controller,
                         onChanged: (val) {
                           setState(() {
-                            _citySubList = _cityList
+                            _selectedDistrict = val;
+                          });
+                        },
+                        style: TextStyle(color: Colors.black, fontSize: 16.0),
+                        decoration: const InputDecoration(
+                            border: UnderlineInputBorder(),
+                            hintText: "Search here...",
+                            hintStyle: TextStyle(color: Colors.black),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 5),
+                            isDense: true,
+                            prefixIcon: Icon(Icons.search)),
+                      ),
+
+                      ///Dropdown Items
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 12),
+                          itemCount: _districtList.length,
+                          physics: const ClampingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () async {
+                                widget.districtController.text =
+                                    _districtList[index].name;
+                                _selectedDistrict = _districtList[index].name;
+                                _filteredTalukList = _talukList
+                                    .where((t) =>
+                                        t.districtId == _districtList[index].id)
+                                    .toList();
+                                Navigator.pop(context);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 20.0, left: 10.0, right: 10.0),
+                                child: Text(_districtList[index].name,
+                                    style: TextStyle(
+                                        color: Colors.grey.shade800,
+                                        fontSize: 16.0)),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50.0))),
+                        onPressed: () {
+                          _selectedDistrict = '';
+                          controller.clear();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Close'),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+      transitionBuilder: (_, anim, __, child) {
+        return SlideTransition(
+          position: Tween(begin: const Offset(0, -1), end: const Offset(0, 0))
+              .animate(anim),
+          child: child,
+        );
+      },
+    );
+  }
+
+  void _showTalukDialog(BuildContext context) {
+    if (_selectedDistrict.isEmpty) {
+      // Show error message or handle the case where district is not selected
+      return;
+    }
+
+    final TextEditingController controller = TextEditingController();
+
+    showGeneralDialog(
+      barrierLabel: 'Taluk(first select the district)',
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 350),
+      context: context,
+      pageBuilder: (context, __, ___) {
+        return Material(
+          color: Colors.transparent,
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  height: MediaQuery.of(context).size.height * .7,
+                  margin: const EdgeInsets.only(top: 60, left: 12, right: 12),
+                  decoration: BoxDecoration(
+                    color: Color(0xffF2FAEB),
+                    borderRadius: BorderRadius.circular(0),
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 10),
+
+                      ///Text Field
+                      TextField(
+                        controller: controller,
+                        onChanged: (val) {
+                          setState(() {
+                            _filteredTalukList = _talukList
                                 .where((element) => element.name
                                     .toLowerCase()
                                     .contains(controller.text.toLowerCase()))
@@ -153,22 +253,20 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 12),
-                          itemCount: _citySubList.length,
+                          itemCount: _filteredTalukList.length,
                           physics: const ClampingScrollPhysics(),
                           itemBuilder: (context, index) {
                             return InkWell(
                               onTap: () async {
-                                setState(() {
-                                  widget.city.text = _citySubList[index].name;
-                                  _citySubList = _cityList;
-                                });
+                                widget.talukController.text =
+                                    _filteredTalukList[index].name;
                                 controller.clear();
                                 Navigator.pop(context);
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only(
                                     bottom: 20.0, left: 10.0, right: 10.0),
-                                child: Text(_citySubList[index].name,
+                                child: Text(_filteredTalukList[index].name,
                                     style: TextStyle(
                                         color: Colors.grey.shade800,
                                         fontSize: 16.0)),
@@ -182,7 +280,7 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50.0))),
                         onPressed: () {
-                          _citySubList = _cityList;
+                          _filteredTalukList = _talukList;
                           controller.clear();
                           Navigator.pop(context);
                         },
@@ -209,7 +307,7 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
   InputDecoration defaultDecoration = const InputDecoration(
       isDense: true,
       hintText: 'Select',
-      hintStyle: TextStyle(color: Colors.white),
+      hintStyle: TextStyle(color: Colors.black),
       suffixIcon: Icon(Icons.arrow_drop_down),
       border: OutlineInputBorder());
 }

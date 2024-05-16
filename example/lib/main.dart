@@ -25,8 +25,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController country = TextEditingController();
-  TextEditingController state = TextEditingController();
-  TextEditingController city = TextEditingController();
+  TextEditingController taluk = TextEditingController();
+  TextEditingController district = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -41,19 +41,19 @@ class _MyHomePageState extends State<MyHomePage> {
               CountryStateCityPicker(
                 // country: country,
                 // state: state,color: Color(0xff1f2128),
-                containerColor:  Color(0xff1f2128),
-                city: city,
+                containerColor: Color(0xffF2FAEB),
+                // city: city,
+                districtController: district,
+                talukController: taluk,
                 dialogColor: Colors.grey.shade200,
                 textFieldDecoration: InputDecoration(
-                  
                   contentPadding:
                       EdgeInsets.symmetric(vertical: 20.0, horizontal: 20),
                   hintStyle: TextStyle(color: Colors.grey[700]),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide(color: Colors.white, width: 2.0),
                   ),
-                  
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide(color: Colors.white, width: 2.0),
@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               SizedBox(height: 20),
-              Text("${country.text}, ${state.text}, ${city.text}")
+              // Text("${country.text}, ${state.text}, ${city.text}")
             ],
           )),
     );

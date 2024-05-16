@@ -22,3 +22,5 @@ flutter:
     - packages/country_state_city_pro/assets/country.json
     - packages/country_state_city_pro/assets/state.json
     - packages/country_state_city_pro/assets/city.json
+    - packages/country_state_city_pro/assets/district.json
+    - packages/country_state_city_pro/assets/taluk.json
